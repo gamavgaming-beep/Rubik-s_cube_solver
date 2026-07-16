@@ -1,0 +1,22 @@
+/* ==========================================================================
+   Rubik Solver Pro - Desktop Styles (css/desktop.css)
+   ========================================================================== */
+
+.workspace {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    height: calc(100vh - 142px);
+    gap: 16px;
+}
+
+.panel-left {
+    height: 100%;
+}
+
+.canvas-container {
+    height: 100%;
+}
+
+.panel-right {
+    height: 100%;
+}
