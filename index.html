@@ -1,40 +1,304 @@
 <!DOCTYPE html>
-<html lang="en">
-
-  <head>
+<html lang="ta">
+<head>
     <meta charset="UTF-8">
-    <title>3D Rubik’s Cube — Generate &amp; Solve (Animated)</title>
-    <link rel="stylesheet" href="./style.css">
-
-  </head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik Solver Pro - 3D Cube Solver</title>
+    <!-- SEO & Metadata -->
+    <meta name="description" content="Professional 3D Rubik's Cube Solver using Kociemba Algorithm. Interactive 3D Editor, Playback Controls, and Instant Solutions.">
+    <meta name="theme-color" content="#0d1117">
     
-  <body>
-  <div class="wrap">
-  <header>
-    <h1>3D Rubik’s Cube — Generate & Solve</h1>
-    <div class="actions">
-      <button id="btn-generate" title="Scramble the cube">Generate</button>
-      <button id="btn-solve" title="Solve by inverting the scramble">Solve</button>
-      <button id="btn-reset" title="Reset to solved state">Reset</button>
-      <label class="speed">
-        Speed
-        <select id="speed">
-          <option value="280">Normal</option>
-          <option value="180" selected>Fast</option>
-          <option value="120">Faster</option>
-        </select>
-      </label>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS Stylesheets -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/mobile.css" media="screen and (max-width: 768px)">
+    <link rel="stylesheet" href="css/desktop.css" media="screen and (min-width: 769px)">
+</head>
+<body>
+    <!-- Background Gradient Effects -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Loading Screen / தொடக்கக் திரை -->
+    <div id="loading-screen" class="loading-overlay">
+        <div class="loader-content">
+            <div class="loader-cube">
+                <div></div><div></div><div></div><div></div><div></div><div></div>
+            </div>
+            <h2>Rubik Solver Pro</h2>
+            <p id="loading-text">முப்பரிமாண அமைப்புகள் ஏற்றப்படுகின்றன...</p>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+        </div>
     </div>
-  </header>
 
-  <main>
-    <div id="stage" aria-label="3D Rubik's cube canvas"></div>
-  </main>
+    <!-- Main Application Wrapper -->
+    <div class="app-container">
+        <!-- Header / மேல் பட்டை -->
+        <header class="app-header glass">
+            <div class="logo">
+                <i class="fa-solid fa-cube logo-icon"></i>
+                <div class="logo-text">
+                    <h1>Rubik Solver Pro</h1>
+                    <span>Kociemba Engine v2.0</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="btn-theme-toggle" class="icon-btn glass" title="வண்ண அமைப்பு"><i class="fa-solid fa-moon"></i></button>
+                <button id="btn-help" class="icon-btn glass" title="உதவி"><i class="fa-solid fa-circle-question"></i></button>
+                <button id="btn-settings" class="icon-btn glass" title="அமைப்புகள்"><i class="fa-solid fa-gear"></i></button>
+            </div>
+        </header>
 
-  <pre id="log" class="log" aria-label="Move log">Booting…</pre>
-</div>
-    <script  src="./script.js"></script>
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Left Panel: Color Picker & State Controls / இடப்பக்க எடிட்டர் பலகம் -->
+            <section class="panel panel-left glass" id="editor-panel">
+                <div class="panel-header">
+                    <h3><i class="fa-solid fa-palette"></i> கியூப் எடிட்டர் (Editor)</h3>
+                </div>
+                
+                <div class="panel-body">
+                    <p class="section-desc">கியூபின் நிலையை மாற்ற கட்டங்களின் மீது கிளிக் செய்து வண்ணம் தீட்டவும்.</p>
+                    
+                    <!-- Color Picker Grid -->
+                    <div class="color-picker-container">
+                        <h4>வண்ணத்தைத் தேர்வு செய்க:</h4>
+                        <div class="color-palette" id="color-palette">
+                            <button class="color-swatch active" data-color="U" style="background-color: #ffffff;" title="மேல் (Up - White)"></button>
+                            <button class="color-swatch" data-color="D" style="background-color: #ffd500;" title="கீழ் (Down - Yellow)"></button>
+                            <button class="color-swatch" data-color="F" style="background-color: #b90000;" title="முன்னால் (Front - Red)"></button>
+                            <button class="color-swatch" data-color="B" style="background-color: #ff5900;" title="பின்னால் (Back - Orange)"></button>
+                            <button class="color-swatch" data-color="L" style="background-color: #0045ad;" title="இடப்பக்கம் (Left - Blue)"></button>
+                            <button class="color-swatch" data-color="R" style="background-color: #009b48;" title="வலப்பக்கம் (Right - Green)"></button>
+                        </div>
+                    </div>
 
-  </body>
-  
+                    <!-- Editor Quick Tools -->
+                    <div class="editor-tools">
+                        <button id="btn-undo" class="btn btn-secondary" disabled><i class="fa-solid fa-arrow-rotate-left"></i> முன் செயல் நீக்கு (Undo)</button>
+                        <button id="btn-redo" class="btn btn-secondary" disabled><i class="fa-solid fa-arrow-rotate-right"></i> மீண்டும் செய்க (Redo)</button>
+                    </div>
+
+                    <div class="editor-preset-actions">
+                        <button id="btn-reset-solved" class="btn btn-danger-soft"><i class="fa-solid fa-sync"></i> முழு நிலை (Reset Solved)</button>
+                        <button id="btn-clear-colors" class="btn btn-danger-soft"><i class="fa-solid fa-eraser"></i> வண்ணங்களை அழி</button>
+                        <button id="btn-scramble" class="btn btn-warning"><i class="fa-solid fa-random"></i> குழப்பு (Scramble)</button>
+                    </div>
+
+                    <hr class="separator">
+
+                    <!-- State Import/Export -->
+                    <div class="state-io">
+                        <h4>Kociemba குறியீடு (String):</h4>
+                        <div class="input-group">
+                            <input type="text" id="kociemba-string" class="glass-input" placeholder="UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB" readonly>
+                            <button id="btn-copy-string" class="icon-btn" title="நகலெடு"><i class="fa-solid fa-copy"></i></button>
+                        </div>
+                        <div class="io-buttons">
+                            <button id="btn-import-state" class="btn btn-secondary-soft"><i class="fa-solid fa-file-import"></i> குறியீடு இறக்குமதி (Import)</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Panel: 3D Render Area / முப்பரிமாணக் காட்சிப் பகுதி -->
+            <section class="canvas-container" id="canvas-container">
+                <!-- 3D Camera Floating HUD -->
+                <div class="canvas-hud top-hud">
+                    <button id="btn-reset-cam" class="hud-btn glass" title="கேமரா ரீசெட்"><i class="fa-solid fa-camera"></i></button>
+                    <button id="btn-auto-rotate" class="hud-btn glass" title="தானியங்கி சுழற்சி"><i class="fa-solid fa-arrows-spin"></i></button>
+                    <span id="fps-counter" class="hud-badge glass">FPS: 60</span>
+                </div>
+
+                <!-- 3D Scene Div -->
+                <div id="three-canvas-wrapper" class="three-wrapper"></div>
+
+                <!-- Interactive Tutorial Floating Indicator -->
+                <div class="canvas-hud bottom-hud">
+                    <div id="cube-status-badge" class="hud-status-badge solved">
+                        <span class="status-dot"></span> <span id="status-text">கியூப் தீர்க்கப்பட்டது</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Solver controls & Solution Algorithm / வலப்பக்க தீர்வு பலகம் -->
+            <section class="panel panel-right glass" id="solver-panel">
+                <div class="panel-header">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> தானியங்கி தீர்வு (Solver)</h3>
+                </div>
+
+                <div class="panel-body">
+                    <!-- Solve Algorithm Section -->
+                    <div class="solve-action-block">
+                        <button id="btn-solve-cube" class="btn btn-primary btn-large"><i class="fa-solid fa-play"></i> தீர்வு கண்டுபிடி (Solve)</button>
+                    </div>
+
+                    <div class="solver-results hidden" id="solver-results">
+                        <div class="results-stats">
+                            <div class="stat-card glass">
+                                <span class="stat-label">நகர்வுகள் (Moves)</span>
+                                <span id="val-move-count" class="stat-val">0</span>
+                            </div>
+                            <div class="stat-card glass">
+                                <span class="stat-label">நேரம் (Time)</span>
+                                <span id="val-solve-time" class="stat-val">0ms</span>
+                            </div>
+                        </div>
+
+                        <!-- Full Algorithm Steps display -->
+                        <div class="algorithm-container">
+                            <h4>தீர்வு நகர்வுகள் (Solution Steps):</h4>
+                            <div id="solution-moves-list" class="moves-list-flex">
+                                <!-- Dynamic moves will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Player Playback Panel -->
+                        <div class="playback-controls">
+                            <div class="playback-buttons">
+                                <button id="btn-play-prev" class="playback-btn glass" title="முந்தைய நகர்வு"><i class="fa-solid fa-backward-step"></i></button>
+                                <button id="btn-play-toggle" class="playback-btn glass active-play" title="இயக்கு / நிறுத்து"><i class="fa-solid fa-play"></i></button>
+                                <button id="btn-play-next" class="playback-btn glass" title="அடுத்த நகர்வு"><i class="fa-solid fa-forward-step"></i></button>
+                            </div>
+                            
+                            <!-- Speed Slider -->
+                            <div class="slider-group">
+                                <div class="slider-labels">
+                                    <span>சுழற்சி வேகம்:</span>
+                                    <span id="val-speed">1.0x</span>
+                                </div>
+                                <input type="range" id="solve-speed" min="0.2" max="3" step="0.1" value="1.0" class="glass-slider">
+                            </div>
+
+                            <!-- Interactive progress bar -->
+                            <div class="solution-progress">
+                                <div class="progress-bar-bg">
+                                    <div id="solution-progress-bar" class="progress-bar-fill" style="width: 0%;"></div>
+                                </div>
+                                <div class="progress-text">
+                                    <span id="current-step-index">0</span> / <span id="total-step-index">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Manual Rotation Quick Buttons (Virtual Keyboard) -->
+                    <div class="manual-rotations">
+                        <h4>விரைவு நகர்வுகள் (Virtual Keyboard)</h4>
+                        <div class="rotation-grid">
+                            <button class="rot-btn glass" data-move="U">U</button>
+                            <button class="rot-btn glass" data-move="D">D</button>
+                            <button class="rot-btn glass" data-move="L">L</button>
+                            <button class="rot-btn glass" data-move="R">R</button>
+                            <button class="rot-btn glass" data-move="F">F</button>
+                            <button class="rot-btn glass" data-move="B">B</button>
+                            <button class="rot-btn glass" data-move="U'">U'</button>
+                            <button class="rot-btn glass" data-move="D'">D'</button>
+                            <button class="rot-btn glass" data-move="L'">L'</button>
+                            <button class="rot-btn glass" data-move="R'">R'</button>
+                            <button class="rot-btn glass" data-move="F'">F'</button>
+                            <button class="rot-btn glass" data-move="B'">B'</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Status Bar / தகவல்தொடர்பு பட்டை -->
+        <footer class="app-footer glass">
+            <div class="footer-segment">
+                <i class="fa-solid fa-gamepad"></i>
+                <span id="keyboard-hint">கீபோர்டு சுழற்சிகள்: R, L, U, D, F, B (Shift + நகர்வு = எதிர்ச்சுழற்சி)</span>
+            </div>
+            <div class="footer-segment text-right">
+                <span>வெளியீடு v1.0.0 (Tamil Edition)</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals & Dialogs / உரையாடல் பெட்டிகள் -->
+    
+    <!-- Help Dialog -->
+    <div id="dialog-help" class="modal-overlay hidden">
+        <div class="modal-card glass">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-circle-question text-gradient"></i> உதவி மற்றும் வழிகாட்டி</h3>
+                <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <h4>வண்ணம் தீட்டுவது எப்படி?</h4>
+                <p>இடப்பக்க எடிட்டர் பலகத்தில் இருந்து ஒரு வண்ணத்தைத் தேர்ந்தெடுத்து, பின் 3D கியூபியில் நீங்கள் விரும்பும் பக்கத்திலுள்ள சதுரத்தின் மீது கிளிக் செய்து அதற்கு வண்ணம் பூசலாம்.</p>
+                
+                <h4>விசைப்பலகை கட்டுப்பாடுகள் (Keyboard Controls)</h4>
+                <ul>
+                    <li><strong>சுழற்ற:</strong> U, D, L, R, F, B பொத்தான்களை அழுத்தவும்.</li>
+                    <li><strong>எதிர் திசையில் சுழற்ற (Prime):</strong> Shift விசையைப் பிடித்தவாறு U, D, L, R, F, B அழுத்தவும்.</li>
+                    <li><strong>கேமரா சுழற்ற:</strong> இடது மவுஸ் பொத்தானை அழுத்தி இழுக்கவும் (Left Drag).</li>
+                    <li><strong>கியூபை நகர்த்த:</strong> வலது மவுஸ் பொத்தானை அழுத்தி இழுக்கவும் (Right Drag).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Dialog -->
+    <div id="dialog-settings" class="modal-overlay hidden">
+        <div class="modal-card glass">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-gear text-gradient"></i> அமைப்புகள் (Settings)</h3>
+                <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-option">
+                    <label for="set-render-quality">முப்பரிமாண தரம் (Render Quality):</label>
+                    <select id="set-render-quality" class="glass-input">
+                        <option value="high">மிக உயர்ந்த தரம் (High Quality - Shadows Enabled)</option>
+                        <option value="medium" selected>சாதாரண தரம் (Medium Quality)</option>
+                        <option value="low">குறைந்த தரம் (Low Quality - Mobile Optimized)</option>
+                    </select>
+                </div>
+                <div class="settings-option">
+                    <label class="switch-container">
+                        <span>நிழல்கள் (Enable Shadows)</span>
+                        <input type="checkbox" id="set-shadows" checked>
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-option">
+                    <label class="switch-container">
+                        <span>ஒலி விளைவுகள் (Sound Effects)</span>
+                        <input type="checkbox" id="set-sound" checked>
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Snackbars / உடனடி அறிவிப்புகள் -->
+    <div id="snackbar" class="snackbar-container"></div>
+
+    <!-- External Libraries (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Custom Modules -->
+    <script src="lib/cube.js"></script>
+    <script src="lib/solve.js"></script>
+    <script src="js/animation.js"></script>
+    <script src="js/cube-engine.js"></script>
+    <script src="js/cube-editor.js"></script>
+    <script src="js/color-picker.js"></script>
+    <script src="js/solver.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/viewer.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="app.js"></script>
+</body>
 </html>
