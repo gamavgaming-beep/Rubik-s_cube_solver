@@ -11,7 +11,6 @@ const FACE_ORDER = ['U','R','F','D','L','B'];
 
 const cubeEl = document.getElementById('cube');
 const facesEl = document.getElementById('faces');
-const legendEl = document.getElementById('legend');
 const moveStrip = document.getElementById('moveStrip');
 const moveInput = document.getElementById('moveInput');
 
@@ -189,16 +188,6 @@ function turn(face, prime=false){
   }
 }
 
-function buildLegend(){
-  legendEl.innerHTML = '';
-  for(const [face,color] of Object.entries(COLORS)){
-    const item = document.createElement('div');
-    item.className = 'legend-item';
-    item.innerHTML = `<span class="dot" style="background:${color}"></span><span>${face}</span>`;
-    legendEl.appendChild(item);
-  }
-}
-
 function buildEditor(){
   facesEl.innerHTML = '';
   FACE_ORDER.forEach(face => {
@@ -207,7 +196,6 @@ function buildEditor(){
     wrap.innerHTML = `<div class="face-title"><span>${face}</span><span>9 stickers</span></div>`;
     const grid = document.createElement('div');
     grid.className = 'face-grid';
-
     stickers[face] = [];
 
     for(let i=0;i<9;i++){
@@ -223,7 +211,6 @@ function buildEditor(){
     wrap.appendChild(grid);
     facesEl.appendChild(wrap);
   });
-
   syncEditor();
 }
 
@@ -333,7 +320,6 @@ async function animateMove(move){
       const ease = 1 - Math.pow(1 - t, 3);
       const currentY = baseY + (targetY - baseY) * ease;
       cubeEl.style.transform = `rotateX(-28deg) rotateY(${currentY}deg)`;
-
       if(t < 1){
         requestAnimationFrame(frame);
       }else{
@@ -359,7 +345,6 @@ async function nextStep(){
 
 async function prevStep(){
   if(playing || currentStep <= 0) return;
-
   stopAuto();
   const target = currentStep - 1;
   cube = newSolvedCube();
@@ -440,6 +425,10 @@ prevBtn.addEventListener('click', prevStep);
 nextBtn.addEventListener('click', nextStep);
 autoBtn.addEventListener('click', autoPlay);
 
-buildLegend();
 buildEditor();
+buildCube();
 resetAll();
+
+function buildCube(){
+  renderCube3D();
+}
