@@ -426,9 +426,5 @@ nextBtn.addEventListener('click', nextStep);
 autoBtn.addEventListener('click', autoPlay);
 
 buildEditor();
-buildCube();
+renderCube3D();
 resetAll();
-
-function buildCube(){
-  renderCube3D();
-}
