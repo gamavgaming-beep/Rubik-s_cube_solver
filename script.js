@@ -47,17 +47,6 @@ function newSolvedCube(){
   };
 }
 
-function cloneCube(src){
-  return {
-    U:src.U.slice(),
-    R:src.R.slice(),
-    F:src.F.slice(),
-    D:src.D.slice(),
-    L:src.L.slice(),
-    B:src.B.slice()
-  };
-}
-
 function rotateFace(arr, prime){
   const a = arr.slice();
   if(!prime){
@@ -330,17 +319,11 @@ function stopAuto(){
   }
 }
 
-function wait(ms){
-  return new Promise(res => setTimeout(res, ms));
-}
-
 async function animateMove(move){
   playing = true;
   setMode('Animating');
-  const face = move.face;
-  const prime = move.prime;
   const baseY = 38;
-  const targetY = baseY + (prime ? -90 : 90);
+  const targetY = baseY + (move.prime ? -90 : 90);
   const start = performance.now();
   const duration = 260;
 
@@ -350,10 +333,11 @@ async function animateMove(move){
       const ease = 1 - Math.pow(1 - t, 3);
       const currentY = baseY + (targetY - baseY) * ease;
       cubeEl.style.transform = `rotateX(-28deg) rotateY(${currentY}deg)`;
+
       if(t < 1){
         requestAnimationFrame(frame);
       }else{
-        turn(face, prime);
+        turn(move.face, move.prime);
         renderCube3D();
         cubeEl.style.transform = 'rotateX(-28deg) rotateY(38deg)';
         resolve();
@@ -378,7 +362,7 @@ async function prevStep(){
 
   stopAuto();
   const target = currentStep - 1;
-  resetCubeOnly();
+  cube = newSolvedCube();
   for(let i=0;i<target;i++){
     const m = history[i];
     turn(m.face, m.prime);
@@ -388,12 +372,6 @@ async function prevStep(){
   syncEditor();
   refreshProgress();
   setMode('Ready');
-}
-
-function resetCubeOnly(){
-  cube = newSolvedCube();
-  renderCube3D();
-  syncEditor();
 }
 
 function resetAll(){
