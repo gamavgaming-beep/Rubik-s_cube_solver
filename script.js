@@ -1,96 +1,146 @@
-/* Simple demo: builds a flat 2D net editor and a 2D preview that animates moves frame-by-frame.
-   This is intentionally compact so you can paste to GitHub Pages quickly.
-*/
+const COLORS = {
+  U:'#f5f6f7',
+  R:'#ffde3b',
+  F:'#21d15b',
+  D:'#ffd08a',
+  L:'#295bff',
+  B:'#ff5b42'
+};
 
-const faceOrder = ['U','L','F','R','B','D'];
-const colors = {U:'#fff',L:'#ffcc00',F:'#ff0000',R:'#00cc00',B:'#0022cc',D:'#ffcc66'};
+const FACE_ORDER = ['U','R','F','D','L','B'];
 
-function mkSticker(color){ const s=document.createElement('div'); s.className='sticker'; s.style.background=color; return s; }
+const cubeEl = document.getElementById('cube');
+const facesEl = document.getElementById('faces');
+const legendEl = document.getElementById('legend');
+const moveStrip = document.getElementById('moveStrip');
+const moveInput = document.getElementById('moveInput');
 
-function buildEditor(){
-  const facesWrap = document.getElementById('faces');
-  faceOrder.forEach(f=>{
-    const faceDiv = document.createElement('div');
-    faceDiv.className='face';
-    faceDiv.dataset.face=f;
-    for(let i=0;i<9;i++){
-      const st = mkSticker(colors[f]);
-      st.dataset.idx=i;
-      st.addEventListener('click', ()=> {
-        // cycle color for demo
-        const pal = Object.values(colors);
-        const cur = st.style.backgroundColor;
-        let next = pal[(pal.indexOf(rgbToHex(cur)) +1) % pal.length];
-        st.style.background = next;
-      });
-      faceDiv.appendChild(st);
-    }
-    facesWrap.appendChild(faceDiv);
-  });
+const modeText = document.getElementById('modeText');
+const stepText = document.getElementById('stepText');
+const totalText = document.getElementById('totalText');
+const progressBar = document.getElementById('progressBar');
+
+const demoBtn = document.getElementById('demoBtn');
+const resetBtn = document.getElementById('resetBtn');
+const solveBtn = document.getElementById('solveBtn');
+const useMovesBtn = document.getElementById('useMovesBtn');
+const scrambleBtn = document.getElementById('scrambleBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const autoBtn = document.getElementById('autoBtn');
+
+let cube = newSolvedCube();
+let stickers = {};
+let history = [];
+let currentStep = 0;
+let playing = false;
+let autoTimer = null;
+
+function newSolvedCube(){
+  return {
+    U:Array(9).fill('U'),
+    R:Array(9).fill('R'),
+    F:Array(9).fill('F'),
+    D:Array(9).fill('D'),
+    L:Array(9).fill('L'),
+    B:Array(9).fill('B')
+  };
 }
 
-// helper to normalize rgb to hex quick
-function rgbToHex(rgb){
-  if(!rgb) return rgb;
-  if(rgb[0]==='#') return rgb;
-  const m = rgb.match(/(d+),s*(d+),s*(d+)/);
-  if(!m) return rgb;
-  return '#'+[1,2,3].map(i=>parseInt(m[i]).toString(16).padStart(2,'0')).join('');
+function cloneCube(src){
+  return {
+    U:src.U.slice(),
+    R:src.R.slice(),
+    F:src.F.slice(),
+    D:src.D.slice(),
+    L:src.L.slice(),
+    B:src.B.slice()
+  };
 }
 
-buildEditor();
-
-document.getElementById('solveBtn').addEventListener('click', ()=>{
-  // demo move sequence (not a real solver). Each move is {face:'R',dir:1} meaning clockwise.
-  const moves = [{face:'R',dir:1},{face:'U',dir:-1},{face:'F',dir:1},{face:'R',dir:1},{face:'U',dir:1}];
-  animateMoves(moves);
-});
-
-function animateMoves(moves){
-  const log = document.getElementById('log');
-  log.textContent = 'Animating '+moves.length+' moves...';
-  let i=0;
-  function next(){
-    if(i>=moves.length){ log.textContent='Done'; return;}
-    animateSingle(moves[i], ()=>{ i++; setTimeout(next,300); });
+function rotateFace(arr, prime){
+  const a = arr.slice();
+  if(!prime){
+    return [a[6],a[3],a[0],a[7],a[4],a[1],a[8],a[5],a[2]];
   }
-  next();
+  return [a[2],a[5],a[8],a[1],a[4],a[7],a[0],a[3],a[6]];
 }
 
-function animateSingle(move, cb){
-  const preview = document.getElementById('preview2d');
-  // create overlay element to show rotation visually
-  const overlay = document.createElement('div');
-  overlay.style.position='absolute';
-  overlay.style.left = preview.getBoundingClientRect().left + 'px';
-  overlay.style.top = preview.getBoundingClientRect().top + 'px';
-  overlay.style.width = preview.offsetWidth+'px';
-  overlay.style.height = preview.offsetHeight+'px';
-  overlay.style.pointerEvents='none';
-  overlay.style.display='flex';
-  overlay.style.alignItems='center';
-  overlay.style.justifyContent='center';
-  overlay.style.backdropFilter='blur(0px)';
-  overlay.style.transition='transform 320ms linear';
-  overlay.style.transformOrigin='center';
-  overlay.style.zIndex=999;
-  document.body.appendChild(overlay);
-
-  // rotate a fake cube face indicator
-  overlay.textContent = move.face + (move.dir===1? " ↻":" ↺");
-  overlay.style.fontSize='48px';
-  overlay.style.opacity='0.95';
-  overlay.style.background='rgba(255,255,255,0.4)';
-  overlay.style.borderRadius='10px';
-  // animate
-  requestAnimationFrame(()=>{
-    overlay.style.transform = 'rotateY(' + (move.dir*90) + 'deg)';
-    setTimeout(()=>{
-      overlay.style.transform = 'rotateY(0deg)';
-      setTimeout(()=>{
-        document.body.removeChild(overlay);
-        cb();
-      },280);
-    },320);
-  });
+function getRow(face, row){
+  const i = row * 3;
+  return cube[face].slice(i, i + 3);
 }
+
+function setRow(face, row, vals){
+  const i = row * 3;
+  vals.forEach((v, idx) => cube[face][i + idx] = v);
+}
+
+function getCol(face, col){
+  return [cube[face][col], cube[face][col + 3], cube[face][col + 6]];
+}
+
+function setCol(face, col, vals){
+  [0,1,2].forEach(i => cube[face][col + i*3] = vals[i]);
+}
+
+function turn(face, prime=false){
+  if(face === 'R'){
+    cube.R = rotateFace(cube.R, prime);
+    const u = getCol('U',2);
+    const f = getCol('F',2);
+    const d = getCol('D',2);
+    const b = getCol('B',0).reverse();
+    if(!prime){
+      setCol('F',2,u);
+      setCol('D',2,f);
+      setCol('B',0,d.reverse());
+      setCol('U',2,b);
+    }else{
+      setCol('B',0,u.reverse());
+      setCol('D',2,b.reverse());
+      setCol('F',2,d);
+      setCol('U',2,f);
+    }
+  }
+
+  if(face === 'L'){
+    cube.L = rotateFace(cube.L, prime);
+    const u = getCol('U',0);
+    const f = getCol('F',0);
+    const d = getCol('D',0);
+    const b = getCol('B',2).reverse();
+    if(!prime){
+      setCol('B',2,u.reverse());
+      setCol('D',0,b.reverse());
+      setCol('F',0,d);
+      setCol('U',0,f);
+    }else{
+      setCol('F',0,u);
+      setCol('D',0,f);
+      setCol('B',2,d.reverse());
+      setCol('U',0,b);
+    }
+  }
+
+  if(face === 'U'){
+    cube.U = rotateFace(cube.U, prime);
+    const f = getRow('F',0);
+    const r = getRow('R',0);
+    const b = getRow('B',0);
+    const l = getRow('L',0);
+    if(!prime){
+      setRow('R',0,f);
+      setRow('B',0,r);
+      setRow('L',0,b);
+      setRow('F',0,l);
+    }else{
+      setRow('L',0,f);
+      setRow('B',0,l);
+      setRow('R',0,b);
+      setRow('F',0,r);
+    }
+  }
+
+  if(face === 'D'){
+    cube.D = ro
