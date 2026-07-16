@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rubik Demo - Frame-by-frame Solver</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Cube 3x3 — Solver Animation Demo</h1>
+
+    <div id="cube-ui">
+      <div id="editor">
+        <div id="faces">
+          <!-- 6 faces, each 3x3 grid -->
+        </div>
+      </div>
+
+      <div id="controls">
+        <button id="resetBtn">Reset</button>
+        <button id="solveBtn" class="primary">Solve</button>
+        <label><input type="checkbox" id="show3D"> Use 3D preview</label>
+        <div id="log"></div>
+      </div>
+    </div>
+
+    <div id="previewWrap">
+      <div id="preview2d"></div>
+      <div id="preview3d" class="hidden"></div>
+    </div>
+
+    <footer>Deploy this repo to GitHub Pages (branch: main, folder: /)</footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
