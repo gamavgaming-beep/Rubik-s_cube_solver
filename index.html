@@ -1,79 +1,40 @@
-<!doctype html>
-<html lang="ta">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>3D Cube Solver Pro</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="app">
-    <header class="topbar">
-      <div>
-        <h1>3D Cube Solver Pro</h1>
-        <p>54 stickers • click to color • next-by-next 3D animation</p>
-      </div>
-      <div class="top-actions">
-        <button id="demoBtn">Demo</button>
-        <button id="resetBtn">Reset</button>
-        <button id="solveBtn" class="primary">Solve</button>
-      </div>
-    </header>
+<!DOCTYPE html>
+<html lang="en">
 
-    <main class="layout">
-      <section class="panel editor-panel">
-        <div class="panel-head">
-          <h2>Manual Color Input</h2>
-          <span>Tap stickers to change color</span>
-        </div>
+  <head>
+    <meta charset="UTF-8">
+    <title>3D Rubik’s Cube — Generate &amp; Solve (Animated)</title>
+    <link rel="stylesheet" href="./style.css">
 
-        <div id="faces" class="faces"></div>
+  </head>
+    
+  <body>
+  <div class="wrap">
+  <header>
+    <h1>3D Rubik’s Cube — Generate & Solve</h1>
+    <div class="actions">
+      <button id="btn-generate" title="Scramble the cube">Generate</button>
+      <button id="btn-solve" title="Solve by inverting the scramble">Solve</button>
+      <button id="btn-reset" title="Reset to solved state">Reset</button>
+      <label class="speed">
+        Speed
+        <select id="speed">
+          <option value="280">Normal</option>
+          <option value="180" selected>Fast</option>
+          <option value="120">Faster</option>
+        </select>
+      </label>
+    </div>
+  </header>
 
-        <div class="solver-box">
-          <label for="moveInput">Move sequence</label>
-          <textarea id="moveInput" placeholder="Example: R U R' U' F2"></textarea>
-          <div class="row">
-            <button id="useMovesBtn">Use Moves</button>
-            <button id="scrambleBtn">Scramble</button>
-          </div>
-        </div>
+  <main>
+    <div id="stage" aria-label="3D Rubik's cube canvas"></div>
+  </main>
 
-        <div class="status">
-          <div>Mode: <b id="modeText">Ready</b></div>
-          <div>Step: <b id="stepText">0</b></div>
-          <div>Total: <b id="totalText">0</b></div>
-        </div>
+  <pre id="log" class="log" aria-label="Move log">Booting…</pre>
+</div>
+    <script  src="./script.js"></script>
 
-        <div class="progress">
-          <div id="progressBar" class="progress-bar"></div>
-        </div>
-
-        <div class="move-strip" id="moveStrip"></div>
-      </section>
-
-      <section class="panel viewer-panel">
-        <div class="panel-head">
-          <h2>3D Preview</h2>
-          <span>Frame-by-frame rotation</span>
-        </div>
-
-        <div class="viewer">
-          <div class="cube-stage">
-            <div id="cube" class="cube"></div>
-          </div>
-        </div>
-
-        <div class="controls">
-          <button id="prevBtn">Previous</button>
-          <button id="nextBtn" class="primary">Next</button>
-          <button id="autoBtn" class="good">Auto Play</button>
-        </div>
-
-        <div class="hint">Cube stickers-ஐ click பண்ணி color change பண்ணலாம்.</div>
-      </section>
-    </main>
-  </div>
-
-  <script src="script.js"></script>
-</body>
+  </body>
+  
 </html>
